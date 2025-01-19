@@ -1,6 +1,8 @@
-import Header from "../components/Header";
+"use client"
+
 import Link from "next/link";
 import { useState } from "react";
+import Header from "./components/Header";
 
 export default function Home() {
   const [stats] = useState({
@@ -19,7 +21,7 @@ export default function Home() {
 
   return (
     <div>
-      <Header user={user} onSignOut={handleSignOut} />
+      {/* <Header user={user} onSignOut={handleSignOut} /> */}
       <main className="container mx-auto p-6">
         <h1 className="text-4xl font-bold mb-8">Dashboard</h1>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">

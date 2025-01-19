@@ -16,7 +16,7 @@ const sampleCourses = [
       trainingSubjects: ["React.js"],
       location: "Stuttgart",
       email: "jane.doe@example.com",
-    },
+    // },
   },
   {
     id: 2,
