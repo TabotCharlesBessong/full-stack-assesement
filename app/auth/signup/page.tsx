@@ -1,32 +1,34 @@
-"use client"
+"use client";
 
 import { Formik, Form, Field, ErrorMessage } from "formik";
 import * as Yup from "yup";
 import axios from "axios";
 import toast from "react-hot-toast";
 import { motion } from "framer-motion";
+import { useRouter } from "next/navigation";
 
 const SignupSchema = Yup.object().shape({
   username: Yup.string().required("Username is required"),
-  email: Yup.string()
-    .email("Invalid email address")
-    .required("Email is required"),
   password: Yup.string()
     .min(6, "Password must be at least 6 characters")
     .required("Password is required"),
+  confirmPassword: Yup.string()
+    .oneOf([Yup.ref("password"),], "Passwords must match")
+    .required("Please confirm your password"),
 });
 
 export default function Signup() {
+  const router = useRouter();
+
   const handleSignup = async (values: {
     username: string;
-    email: string;
     password: string;
+    confirmPassword: string;
   }) => {
     try {
-      const response = await axios.post("/api/auth/signup", values);
+      await axios.post("/api/auth", { ...values, action: "register" });
       toast.success("Signup successful!");
-      console.log("Signup response:", response.data);
-      // Redirect or additional logic after signup
+      router.push("/auth/login");
     } catch (error) {
       console.error("Signup error:", error);
       toast.error("Signup failed. Please try again.");
@@ -43,7 +45,7 @@ export default function Signup() {
       >
         <h1 className="text-2xl font-semibold text-gray-800 mb-6">Signup</h1>
         <Formik
-          initialValues={{ username: "", email: "", password: "" }}
+          initialValues={{ username: "", password: "", confirmPassword: "" }}
           validationSchema={SignupSchema}
           onSubmit={handleSignup}
         >
@@ -71,26 +73,6 @@ export default function Signup() {
               </div>
               <div>
                 <label
-                  htmlFor="email"
-                  className="block text-gray-700 text-sm font-medium mb-2"
-                >
-                  Email:
-                </label>
-                <Field
-                  id="email"
-                  name="email"
-                  type="email"
-                  className="border border-gray-300 rounded-lg p-3 w-full focus:outline-none focus:ring-2 focus:ring-blue-500 transition"
-                  placeholder="Enter your email"
-                />
-                <ErrorMessage
-                  name="email"
-                  component="div"
-                  className="text-red-500 text-sm mt-1"
-                />
-              </div>
-              <div>
-                <label
                   htmlFor="password"
                   className="block text-gray-700 text-sm font-medium mb-2"
                 >
@@ -105,6 +87,26 @@ export default function Signup() {
                 />
                 <ErrorMessage
                   name="password"
+                  component="div"
+                  className="text-red-500 text-sm mt-1"
+                />
+              </div>
+              <div>
+                <label
+                  htmlFor="confirmPassword"
+                  className="block text-gray-700 text-sm font-medium mb-2"
+                >
+                  Confirm Password:
+                </label>
+                <Field
+                  id="confirmPassword"
+                  name="confirmPassword"
+                  type="password"
+                  className="border border-gray-300 rounded-lg p-3 w-full focus:outline-none focus:ring-2 focus:ring-blue-500 transition"
+                  placeholder="Confirm your password"
+                />
+                <ErrorMessage
+                  name="confirmPassword"
                   component="div"
                   className="text-red-500 text-sm mt-1"
                 />

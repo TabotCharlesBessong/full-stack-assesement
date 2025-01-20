@@ -1,10 +1,11 @@
-"use client"
+"use client";
 
 import { Formik, Form, Field, ErrorMessage } from "formik";
 import * as Yup from "yup";
 import axios from "axios";
 import toast from "react-hot-toast";
 import { motion } from "framer-motion";
+import { useRouter } from "next/navigation";
 
 const LoginSchema = Yup.object().shape({
   username: Yup.string().required("Username is required"),
@@ -12,15 +13,21 @@ const LoginSchema = Yup.object().shape({
 });
 
 export default function Login() {
+  const router = useRouter();
+
   const handleLogin = async (values: {
     username: string;
     password: string;
   }) => {
     try {
-      const response = await axios.post("/api/auth/login", values);
+      const response = await axios.post("/api/auth", {
+        ...values,
+        action: "login",
+      });
+      const { token } = response.data;
+      localStorage.setItem("authToken", token); // Store the token in localStorage
       toast.success("Login successful!");
-      console.log("Login response:", response.data);
-      // Redirect or store token as needed
+      router.push("/"); // Redirect to dashboard or another page
     } catch (error) {
       console.error("Login error:", error);
       toast.error("Login failed. Please check your credentials.");
