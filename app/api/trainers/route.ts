@@ -40,7 +40,12 @@ export async function POST(req: Request) {
   const body = await req.json();
 
   try {
-    const trainer = new Trainer(body);
+    const trainer = new Trainer({
+      ...body,
+      trainerSubjects: Array.isArray(body.trainerSubjects)
+        ? body.trainerSubjects
+        : body.trainerSubjects.split(",").map((s: string) => s.trim()),
+    });
     await trainer.save();
     return NextResponse.json(trainer, { status: 201 });
   } catch (error) {
@@ -53,18 +58,26 @@ export async function POST(req: Request) {
 
 export async function PUT(req: Request) {
   await connectDB();
-  const { trainerId, ...updates } = await req.json();
+  const { trainerId, trainerSubjects, ...updates } = await req.json();
 
   try {
-    const trainer = await Trainer.findByIdAndUpdate(trainerId, updates, {
-      new: true,
-    });
+    const processedSubjects = Array.isArray(trainerSubjects)
+      ? trainerSubjects
+      : trainerSubjects.split(",").map((s: string) => s.trim());
+
+    const trainer = await Trainer.findByIdAndUpdate(
+      trainerId,
+      { ...updates, trainerSubjects: processedSubjects },
+      { new: true }
+    );
+
     if (!trainer) {
       return NextResponse.json(
         { message: "Trainer not found." },
         { status: 404 }
       );
     }
+
     return NextResponse.json(trainer);
   } catch (error) {
     return NextResponse.json(
@@ -73,6 +86,7 @@ export async function PUT(req: Request) {
     );
   }
 }
+
 
 export async function DELETE(req: Request) {
   await connectDB();

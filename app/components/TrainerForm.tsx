@@ -10,38 +10,40 @@ interface TrainerFormProps {
 }
 
 interface TrainerFormValues {
-  id?: number;
+  id?: string;
   name: string;
-  trainingSubjects: string[];
+  trainerSubjects: string[];
   location: string;
   email: string;
 }
 
 const TrainerSchema = Yup.object().shape({
   name: Yup.string().required("Trainer name is required"),
-  trainingSubjects: Yup.array()
-    .of(Yup.string())
-    .min(1, "At least one subject is required"),
+  trainerSubjects: Yup.string().required("At least one subject is required"),
   location: Yup.string().required("Location is required"),
   email: Yup.string()
     .email("Invalid email address")
     .required("Email is required"),
 });
 
-export const TrainerForm: React.FC<TrainerFormProps> = ({
+const TrainerForm: React.FC<TrainerFormProps> = ({
   onClose,
   fetchData,
-  initialValues = { name: "", trainingSubjects: [], location: "", email: "" },
+  initialValues = { name: "", trainerSubjects: [], location: "", email: "" },
 }) => {
   const handleSubmit = async (values: TrainerFormValues) => {
     try {
+      const processedValues = {
+        ...values,
+        trainerSubjects: values.trainerSubjects.toString().split(",").map((s) => s.trim()), // Split by commas and trim
+      };
       if (values.id) {
         // Update trainer
-        await axios.put(`/api/trainers/${values.id}`, values);
+        await axios.put(`/api/trainers/${values.id}`, processedValues);
         toast.success("Trainer updated successfully!");
       } else {
         // Create trainer
-        await axios.post("/api/trainers", values);
+        await axios.post("/api/trainers", processedValues);
         toast.success("Trainer created successfully!");
       }
       fetchData();
@@ -79,12 +81,12 @@ export const TrainerForm: React.FC<TrainerFormProps> = ({
               <label className="block text-gray-700">Training Subjects</label>
               <Field
                 type="text"
-                name="trainingSubjects"
+                name="trainerSubjects"
                 className="w-full border px-3 py-2 rounded"
                 placeholder="Comma-separated (e.g., React.js, Node.js)"
               />
               <ErrorMessage
-                name="trainingSubjects"
+                name="trainerSubjects"
                 component="div"
                 className="text-red-500 text-sm"
               />
@@ -140,3 +142,5 @@ export const TrainerForm: React.FC<TrainerFormProps> = ({
     </div>
   );
 };
+
+export default TrainerForm
