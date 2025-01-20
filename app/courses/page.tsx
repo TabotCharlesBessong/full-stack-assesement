@@ -1,118 +1,120 @@
-"use client"
+"use client";
 
-import axios from "axios"
+import axios from "axios";
 import { useEffect, useState } from "react";
 import toast from "react-hot-toast";
 import Modal from "../components/Modal";
 import CourseForm from "../components/CourseForm";
-
-
-const sampleCourses = [
-  {
-    id: 1,
-    name: "React.js Fundamentals",
-    date: "2024-10-15",
-    subject: "React.js",
-    location: "Stuttgart",
-    participants: 15,
-    notes: "Introduction to React.js",
-    price: 250,
-    trainer: {
-      name: "Jane Doe",
-      trainingSubjects: ["React.js"],
-      location: "Stuttgart",
-      email: "jane.doe@example.com",
-    },
-  },
-  {
-    id: 2,
-    name: "Node.js Basics",
-    date: "2024-10-22",
-    subject: "Node.js",
-    location: "Stuttgart",
-    participants: 10,
-    notes: "Introduction to Node.js",
-    price: 200,
-    trainer: null,
-  },
-];
-
-const sampleTrainers = [
-  {
-    id: 1,
-    name: "Jane Doe",
-    trainingSubjects: ["React.js"],
-    location: "Stuttgart",
-    email: "jane.doe@example.com",
-  },
-  {
-    id: 2,
-    name: "John Smith",
-    trainingSubjects: ["Node.js"],
-    location: "Stuttgart",
-    email: "john.smith@example.com",
-  },
-];
+import { ICourse, ITrainer } from "@/types";
+import {format} from "date-fns"
 
 export default function Courses() {
-
-  const [courses, setCourses] = useState([]);
-  const [trainers, setTrainers] = useState([]);
+  const [courses, setCourses] = useState<ICourse[] | null>(null);
+  const [trainers, setTrainers] = useState<ITrainer[] | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [selectedCourse, setSelectedCourse] = useState(null);
+  const [selectedCourse, setSelectedCourse] = useState<ICourse | null>(null);
+  const [search, setSearch] = useState("");
+  const [sortBy, setSortBy] = useState("date");
+  const [sortOrder, setSortOrder] = useState("asc");
+  const [page, setPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
 
   const fetchCourses = async () => {
     try {
-      const response = await axios.get("/api/courses");
-      setCourses(response.data);
+      const response = await axios.get("/api/courses", {
+        params: { page, search, sortBy, sortOrder },
+      });
+      setCourses(response.data.courses);
+      setTotalPages(response.data.pages);
     } catch (error) {
-      console.error("Error fetching courses:", error);
+      toast.error("Failed to fetch courses. Please try again.");
     }
   };
 
   const fetchTrainers = async () => {
     try {
       const response = await axios.get("/api/trainers");
-      setTrainers(response.data);
+      setTrainers(response.data.trainers);
     } catch (error) {
-      console.error("Error fetching trainers:", error);
+      toast.error("Failed to fetch trainers. Please try again.");
     }
   };
 
-  const handleAssignTrainer = async (courseId:string, trainerId:string) => {
+  const handleDeleteCourse = async (courseId: string) => {
     try {
-      await axios.put(`/api/courses/${courseId}/assign`, { trainerId });
+      await axios.delete("/api/courses", { data: { courseId } });
+      toast.success("Course deleted successfully!");
+      fetchCourses();
+    } catch (error) {
+      toast.error("Failed to delete course. Please try again.");
+    }
+  };
+
+  const handleAssignTrainer = async (courseId: string, trainerId: string) => {
+    try {
+      if (!trainerId) {
+        throw new Error("Trainer ID is required for assignment.");
+      }
+      await axios.post("/api/courses/assign", { courseId, trainerId });
       toast.success("Trainer assigned successfully!");
       fetchCourses();
     } catch (error) {
-      console.error("Error assigning trainer:", error);
-      toast.error("Failed to assign trainer.");
+      toast.error("Failed to assign trainer. Please check your inputs.");
     }
+  };
+
+  const handleSearch = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setSearch(e.target.value);
+    setPage(1); // Reset to the first page
+  };
+
+  const handleSort = (field: string) => {
+    setSortBy(field);
+    setSortOrder(sortOrder === "asc" ? "desc" : "asc");
   };
 
   useEffect(() => {
     fetchCourses();
     fetchTrainers();
-  }, []);
+  }, [page, search, sortBy, sortOrder]);
+
   return (
     <div>
-      {/* <Header user="John Doe" onSignOut={() => {}} /> */}
       <main className="container mx-auto p-6">
         <h1 className="text-4xl font-bold mb-8">Courses</h1>
-        <button
-          className="bg-green-500 text-white px-4 py-2 rounded mb-4"
-          onClick={() => {
-            setSelectedCourse(null);
-            setIsModalOpen(true);
-          }}
-        >
-          Add Course
-        </button>
+        <div className="flex justify-between items-center mb-4">
+          <input
+            type="text"
+            className="border p-2 rounded"
+            placeholder="Search courses..."
+            value={search}
+            onChange={handleSearch}
+          />
+          <button
+            className="bg-green-500 text-white px-4 py-2 rounded"
+            onClick={() => {
+              setSelectedCourse(null);
+              setIsModalOpen(true);
+            }}
+          >
+            Add Course
+          </button>
+        </div>
         <table className="min-w-full bg-white border border-gray-200 rounded-lg shadow-md">
           <thead className="bg-gray-800 text-white">
             <tr>
-              <th className="py-3 px-4 border-b">Course Name</th>
-              <th className="py-3 px-4 border-b">Date</th>
+              <th
+                className="py-3 px-4 border-b cursor-pointer"
+                onClick={() => handleSort("name")}
+              >
+                Course Name
+              </th>
+              <th
+                className="py-3 px-4 border-b cursor-pointer"
+                onClick={() => handleSort("date")}
+              >
+                Date
+              </th>
               <th className="py-3 px-4 border-b">Subject</th>
               <th className="py-3 px-4 border-b">Location</th>
               <th className="py-3 px-4 border-b">Trainer</th>
@@ -120,61 +122,86 @@ export default function Courses() {
             </tr>
           </thead>
           <tbody>
-            {sampleCourses.map((course) => (
+            {courses?.map((course) => (
               <tr key={course.id}>
                 <td className="py-3 px-4 border-b">{course.name}</td>
-                <td className="py-3 px-4 border-b">{course.date}</td>
+                <td className="py-3 px-4 border-b">{format(course.date,"dd/MM/yyyy")}</td>
                 <td className="py-3 px-4 border-b">{course.subject}</td>
                 <td className="py-3 px-4 border-b">{course.location}</td>
                 <td className="py-3 px-4 border-b">
-                  {course.trainer ? (
-                    <div>
-                      <div>
-                        <strong>{course.trainer.name}</strong>
-                      </div>
-                      <div>{course.trainer.trainingSubjects.join(", ")}</div>
-                      <div>{course.trainer.email}</div>
-                    </div>
-                  ) : (
-                    <span>No trainer assigned</span>
-                  )}
+                  {course.trainer ? course.trainer.name : "No trainer assigned"}
                 </td>
                 <td className="py-3 px-4 border-b flex space-x-2">
-                  <button className="bg-yellow-500 text-white px-4 py-2 rounded-lg shadow-md hover:bg-yellow-600">
+                  <button
+                    className="bg-yellow-500 text-white px-4 py-2 rounded"
+                    onClick={() => {
+                      setSelectedCourse(course);
+                      setIsModalOpen(true);
+                    }}
+                  >
                     Edit
                   </button>
-                  <button className="bg-red-500 text-white px-4 py-2 rounded-lg shadow-md hover:bg-red-600">
+                  <button
+                    className="bg-red-500 text-white px-4 py-2 rounded"
+                    onClick={() => handleDeleteCourse(course.id)}
+                  >
                     Delete
                   </button>
                   {course.trainer ? (
-                    <button className="bg-gray-500 text-white px-4 py-2 rounded-lg shadow-md hover:bg-gray-600">
+                    <button
+                      className="bg-gray-500 text-white px-4 py-2 rounded"
+                      onClick={() => handleAssignTrainer(course.id, "")}
+                    >
                       Remove Trainer
                     </button>
                   ) : (
-                    <div className="flex items-center space-x-2">
-                      <select className="border border-gray-300 px-4 py-2 rounded-lg shadow-md">
-                        <option value="">Select Trainer</option>
-                        {sampleTrainers.map((trainer) => (
-                          <option key={trainer.id} value={trainer.id}>
-                            {trainer.name}
-                          </option>
-                        ))}
-                      </select>
-                      <button className="bg-blue-500 text-white px-4 py-2 rounded-lg shadow-md hover:bg-blue-600">
-                        Assign Trainer
-                      </button>
-                    </div>
+                    <select
+                      className="border px-4 py-2 rounded"
+                      onChange={(e) =>
+                        handleAssignTrainer(course.id, e.target.value)
+                      }
+                    >
+                      <option value="">Select Trainer</option>
+                      {trainers?.map((trainer) => (
+                        <option key={trainer.id} value={trainer.id}>
+                          {trainer.name}
+                        </option>
+                      ))}
+                    </select>
                   )}
                 </td>
               </tr>
             ))}
           </tbody>
         </table>
-        <Modal title="Create a new course" isOpen={isModalOpen} onClose={() => setIsModalOpen(false)}>
+        <div className="flex justify-between items-center mt-4">
+          <button
+            disabled={page === 1}
+            onClick={() => setPage((prev) => Math.max(prev - 1, 1))}
+            className="px-4 py-2 bg-gray-300 rounded"
+          >
+            Previous
+          </button>
+          <span>
+            Page {page} of {totalPages}
+          </span>
+          <button
+            disabled={page === totalPages}
+            onClick={() => setPage((prev) => prev + 1)}
+            className="px-4 py-2 bg-gray-300 rounded"
+          >
+            Next
+          </button>
+        </div>
+        <Modal
+          title={selectedCourse ? "Edit Course" : "Create Course"}
+          isOpen={isModalOpen}
+          onClose={() => setIsModalOpen(false)}
+        >
           <CourseForm
-            // initialValues={selectedCourse}
+            initialValues={selectedCourse}
             onClose={() => setIsModalOpen(false)}
-            // fetchData={fetchCourses}
+            fetchCourses={fetchCourses}
           />
         </Modal>
       </main>
