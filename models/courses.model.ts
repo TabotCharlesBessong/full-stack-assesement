@@ -1,6 +1,7 @@
+import { ICourse } from "@/types";
 import mongoose, { Schema, model, models } from "mongoose";
 
-const courseSchema = new Schema({
+const courseSchema = new Schema<ICourse>({
   name: { type: String, required: true },
   date: { type: Date, required: true },
   subject: { type: String, required: true },
@@ -14,6 +15,6 @@ const courseSchema = new Schema({
   },
 });
 
-const Course = models.Course || model("Course", courseSchema);
+const Course = models.Course || model<ICourse>("Course", courseSchema);
 
 export default Course;

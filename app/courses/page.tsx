@@ -1,5 +1,3 @@
-import Header from "../components/Header";
-import Link from "next/link";
 
 const sampleCourses = [
   {
@@ -16,7 +14,7 @@ const sampleCourses = [
       trainingSubjects: ["React.js"],
       location: "Stuttgart",
       email: "jane.doe@example.com",
-    // },
+    },
   },
   {
     id: 2,
@@ -51,7 +49,7 @@ const sampleTrainers = [
 export default function Courses() {
   return (
     <div>
-      <Header user="John Doe" onSignOut={() => {}} />
+      {/* <Header user="John Doe" onSignOut={() => {}} /> */}
       <main className="container mx-auto p-6">
         <h1 className="text-4xl font-bold mb-8">Courses</h1>
         <table className="min-w-full bg-white border border-gray-200 rounded-lg shadow-md">
