@@ -9,7 +9,7 @@ const Header = ({ user, onSignOut }) => {
       <div className="flex items-center space-x-4">
         <span className="text-sm">Welcome, {user}</span>
         <a
-          href="/login"
+          href="/auth/login"
           className="bg-red-500 text-white px-4 py-2 rounded-lg shadow-md hover:bg-red-600"
         >
           Sign Out

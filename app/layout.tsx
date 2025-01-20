@@ -4,6 +4,8 @@ import "./globals.css";
 import Header from "./components/Header";
 import { Provider } from "react-redux";
 import store from "@/store";
+import {Toaster} from "react-hot-toast"
+import { ReduxProvider } from "@/store/provider";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -27,14 +29,15 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <Provider store={store}>
+      <ReduxProvider>
         <body
           className={`${geistSans.variable} ${geistMono.variable} antialiased`}
         >
+          <Toaster />
           <Header user="John Doe" onSignOut={() => {}} />
           {children}
         </body>
-      </Provider>
+      </ReduxProvider>
     </html>
   );
 }

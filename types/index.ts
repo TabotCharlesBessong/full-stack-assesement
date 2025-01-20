@@ -1,4 +1,5 @@
 export interface ICourse {
+  id: string
   title: string;
   notes: string;
   date: Date
@@ -11,6 +12,7 @@ export interface ICourse {
 }
 
 export interface ITrainer {
+  id: string
   name: string;
   email: string;
   trainerSubjects: string[];
@@ -25,6 +27,7 @@ export interface IStats {
 }
 
 export interface IUser {
+  id: string
   username: string;
   password: string;
 }

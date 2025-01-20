@@ -1,3 +1,11 @@
+"use client"
+
+import axios from "axios"
+import { useEffect, useState } from "react";
+import toast from "react-hot-toast";
+import Modal from "../components/Modal";
+import CourseForm from "../components/CourseForm";
+
 
 const sampleCourses = [
   {
@@ -47,11 +55,59 @@ const sampleTrainers = [
 ];
 
 export default function Courses() {
+
+  const [courses, setCourses] = useState([]);
+  const [trainers, setTrainers] = useState([]);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [selectedCourse, setSelectedCourse] = useState(null);
+
+  const fetchCourses = async () => {
+    try {
+      const response = await axios.get("/api/courses");
+      setCourses(response.data);
+    } catch (error) {
+      console.error("Error fetching courses:", error);
+    }
+  };
+
+  const fetchTrainers = async () => {
+    try {
+      const response = await axios.get("/api/trainers");
+      setTrainers(response.data);
+    } catch (error) {
+      console.error("Error fetching trainers:", error);
+    }
+  };
+
+  const handleAssignTrainer = async (courseId:string, trainerId:string) => {
+    try {
+      await axios.put(`/api/courses/${courseId}/assign`, { trainerId });
+      toast.success("Trainer assigned successfully!");
+      fetchCourses();
+    } catch (error) {
+      console.error("Error assigning trainer:", error);
+      toast.error("Failed to assign trainer.");
+    }
+  };
+
+  useEffect(() => {
+    fetchCourses();
+    fetchTrainers();
+  }, []);
   return (
     <div>
       {/* <Header user="John Doe" onSignOut={() => {}} /> */}
       <main className="container mx-auto p-6">
         <h1 className="text-4xl font-bold mb-8">Courses</h1>
+        <button
+          className="bg-green-500 text-white px-4 py-2 rounded mb-4"
+          onClick={() => {
+            setSelectedCourse(null);
+            setIsModalOpen(true);
+          }}
+        >
+          Add Course
+        </button>
         <table className="min-w-full bg-white border border-gray-200 rounded-lg shadow-md">
           <thead className="bg-gray-800 text-white">
             <tr>
@@ -114,6 +170,13 @@ export default function Courses() {
             ))}
           </tbody>
         </table>
+        <Modal title="Create a new course" isOpen={isModalOpen} onClose={() => setIsModalOpen(false)}>
+          <CourseForm
+            // initialValues={selectedCourse}
+            onClose={() => setIsModalOpen(false)}
+            // fetchData={fetchCourses}
+          />
+        </Modal>
       </main>
     </div>
   );
