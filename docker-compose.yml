@@ -8,7 +8,7 @@ services:
       - "3000:3000"  # Map port 3000 of the container to port 3000 on the host
     environment:
       - NODE_ENV=production  # Set environment variables for the app
-      - MONGO_URI=mongodb+srv://charles-junior:junior1967@cluster0.lztyj1t.mongodb.net/seminar
+      - MONGO_URI=mongodb+srv://username:password@cluster0.lztyj1t.mongodb.net/seminar
     depends_on:
       - mongo  # Make sure the MongoDB container is running before this one starts
     networks:
