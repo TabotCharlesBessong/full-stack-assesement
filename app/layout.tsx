@@ -34,7 +34,7 @@ export default function RootLayout({
           className={`${geistSans.variable} ${geistMono.variable} antialiased`}
         >
           <Toaster />
-          <Header user="John Doe" onSignOut={() => {}} />
+          <Header />
           {children}
         </body>
       </ReduxProvider>

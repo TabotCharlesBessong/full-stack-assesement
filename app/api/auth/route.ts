@@ -43,7 +43,7 @@ export async function POST(req: Request) {
       }
 
       const token = jwt.sign({ userId: user._id }, JWT_SECRET, {
-        expiresIn: "1d",
+        expiresIn: "7d",
       });
       return NextResponse.json({ token, message: "Login successful." });
     } catch (error) {
@@ -52,6 +52,30 @@ export async function POST(req: Request) {
   }
 
   return NextResponse.json({ message: "Invalid action." }, { status: 400 });
+}
+
+export async function GET(req: Request) {
+  await connectDB();
+
+  const authHeader = req.headers.get("authorization");
+  if (!authHeader || !authHeader.startsWith("Bearer ")) {
+    return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
+  }
+
+  const token = authHeader.split(" ")[1];
+  try {
+    const decoded: any = jwt.verify(token, JWT_SECRET);
+    const user = await User.findById(decoded.userId).select("-password");
+    if (!user) {
+      return NextResponse.json({ message: "User not found" }, { status: 404 });
+    }
+    return NextResponse.json(user);
+  } catch (error) {
+    return NextResponse.json(
+      { message: "Invalid or expired token" },
+      { status: 401 }
+    );
+  }
 }
 
 export async function DELETE() {

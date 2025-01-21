@@ -1,5 +1,5 @@
 export interface ICourse {
-  id: string
+  _id: string
   title: string;
   notes: string;
   date: Date
@@ -12,7 +12,7 @@ export interface ICourse {
 }
 
 export interface ITrainer {
-  id: string
+  _id: string
   name: string;
   email: string;
   trainerSubjects: string[];
