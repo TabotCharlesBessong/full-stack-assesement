@@ -42,24 +42,38 @@ export default function Courses() {
 
   const handleDeleteCourse = async (courseId: string) => {
     try {
-      await axios.delete("/api/courses", { data: { courseId } });
+      console.log("Deleting course with ID:", courseId); // Debug log
+      await axios.delete(`/api/courses?id=${courseId}`); // Changed to use query parameter
       toast.success("Course deleted successfully!");
       fetchCourses();
     } catch (error) {
+      console.error("Delete error:", error); // Debug log
       toast.error("Failed to delete course. Please try again.");
     }
   };
 
   const handleAssignTrainer = async (courseId: string, trainerId: string) => {
     try {
-      if (!trainerId) {
-        throw new Error("Trainer ID is required for assignment.");
+      console.log("Assigning trainer:", { courseId, trainerId }); // Debug log
+      if (trainerId === "") {
+        // For removing trainer
+        await axios.post("/api/courses/assign", {
+          courseId,
+          trainerId: null,
+        });
+        toast.success("Trainer removed successfully!");
+      } else {
+        // For assigning trainer
+        await axios.post("/api/courses/assign", {
+          courseId,
+          trainerId,
+        });
+        toast.success("Trainer assigned successfully!");
       }
-      await axios.post("/api/courses/assign", { courseId, trainerId });
-      toast.success("Trainer assigned successfully!");
       fetchCourses();
     } catch (error) {
-      toast.error("Failed to assign trainer. Please check your inputs.");
+      console.error("Assignment error:", error); // Debug log
+      toast.error("Failed to update trainer assignment. Please try again.");
     }
   };
 
@@ -77,6 +91,7 @@ export default function Courses() {
     fetchCourses();
     fetchTrainers();
   }, [page, search, sortBy, sortOrder]);
+  console.log(courses)
 
   return (
     <div>
@@ -123,7 +138,7 @@ export default function Courses() {
           </thead>
           <tbody>
             {courses?.map((course) => (
-              <tr key={course.id}>
+              <tr key={course._id}>
                 <td className="py-3 px-4 border-b">{course.name}</td>
                 <td className="py-3 px-4 border-b">{format(course.date,"dd/MM/yyyy")}</td>
                 <td className="py-3 px-4 border-b">{course.subject}</td>
@@ -143,14 +158,14 @@ export default function Courses() {
                   </button>
                   <button
                     className="bg-red-500 text-white px-4 py-2 rounded"
-                    onClick={() => handleDeleteCourse(course.id)}
+                    onClick={() => handleDeleteCourse(course._id)}
                   >
                     Delete
                   </button>
                   {course.trainer ? (
                     <button
                       className="bg-gray-500 text-white px-4 py-2 rounded"
-                      onClick={() => handleAssignTrainer(course.id, "")}
+                      onClick={() => handleAssignTrainer(course._id, "")}
                     >
                       Remove Trainer
                     </button>
@@ -158,12 +173,12 @@ export default function Courses() {
                     <select
                       className="border px-4 py-2 rounded"
                       onChange={(e) =>
-                        handleAssignTrainer(course.id, e.target.value)
+                        handleAssignTrainer(course._id, e.target.value)
                       }
                     >
                       <option value="">Select Trainer</option>
                       {trainers?.map((trainer) => (
-                        <option key={trainer.id} value={trainer.id}>
+                        <option key={trainer._id} value={trainer._id}>
                           {trainer.name}
                         </option>
                       ))}

@@ -38,16 +38,14 @@ export default function Trainers() {
   }, [page, search, sortBy, sortOrder]);
 
   const handleDelete = async (trainerId: string) => {
-    if (window.confirm("Are you sure you want to delete this trainer?")) {
-      try {
-        await axios.delete(`/api/trainers`, { data: { trainerId } }); // Properly passing the trainerId
-        toast.success("Trainer deleted successfully!");
-        fetchTrainers();
-        setIsDeleteModalOpen(false);
-      } catch (error) {
-        console.error(error);
-        toast.error("Failed to delete trainer.");
-      }
+    try {
+      await axios.delete(`/api/trainers?id=${trainerId}`); // Change to use query parameter
+      toast.success("Trainer deleted successfully!");
+      fetchTrainers();
+      setIsDeleteModalOpen(false);
+    } catch (error) {
+      console.error(error);
+      toast.error("Failed to delete trainer.");
     }
   };
 
@@ -106,7 +104,7 @@ export default function Trainers() {
               </thead>
               <tbody>
                 {trainers.map((trainer) => (
-                  <tr key={trainer.id} className="border-b">
+                  <tr key={trainer._id} className="border-b">
                     <td className="py-3 px-4">{trainer.name}</td>
                     <td className="py-3 px-4">
                       {trainer.trainerSubjects.join(", ")}

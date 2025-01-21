@@ -51,35 +51,21 @@ export async function POST(req: Request) {
   }
 }
 
-export async function PUT(req: Request) {
-  await connectDB();
-  const { courseId, ...updates } = await req.json();
-
-  try {
-    const course = await Course.findByIdAndUpdate(courseId, updates, {
-      new: true,
-    });
-    if (!course) {
-      return NextResponse.json(
-        { message: "Course not found." },
-        { status: 404 }
-      );
-    }
-    return NextResponse.json(course);
-  } catch (error) {
-    return NextResponse.json(
-      { message: "Failed to update course." },
-      { status: 500 }
-    );
-  }
-}
-
 export async function DELETE(req: Request) {
   await connectDB();
-  const { courseId } = await req.json();
+  const url = new URL(req.url);
+  const id = url.searchParams.get("id");
+
+  console.log("Received ID for deletion:", id); // Debug log
 
   try {
-    const course = await Course.findByIdAndDelete(courseId);
+    if (!id) {
+      return NextResponse.json(
+        { message: "Course ID is required." },
+        { status: 400 }
+      );
+    }
+    const course = await Course.findByIdAndDelete(id);
     if (!course) {
       return NextResponse.json(
         { message: "Course not found." },
@@ -88,8 +74,37 @@ export async function DELETE(req: Request) {
     }
     return NextResponse.json({ message: "Course deleted successfully." });
   } catch (error) {
+    console.error("Delete error in API:", error); // Debug log
     return NextResponse.json(
       { message: "Failed to delete course." },
+      { status: 500 }
+    );
+  }
+}
+
+export async function PUT(req: Request) {
+  await connectDB();
+  const { id, ...updates } = await req.json();
+
+  console.log("Updating course with ID:", id, "Updates:", updates); // Debug log
+
+  try {
+    const course = await Course.findByIdAndUpdate(id, updates, {
+      new: true,
+    }).populate("trainer");
+
+    if (!course) {
+      console.log("Course not found with ID:", id); // Debug log
+      return NextResponse.json(
+        { message: "Course not found." },
+        { status: 404 }
+      );
+    }
+    return NextResponse.json(course);
+  } catch (error) {
+    console.error("Update error in API:", error); // Debug log
+    return NextResponse.json(
+      { message: "Failed to update course." },
       { status: 500 }
     );
   }

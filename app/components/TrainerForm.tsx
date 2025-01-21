@@ -10,7 +10,7 @@ interface TrainerFormProps {
 }
 
 interface TrainerFormValues {
-  id?: string;
+  _id?: string;
   name: string;
   trainerSubjects: string[];
   location: string;
@@ -35,14 +35,20 @@ const TrainerForm: React.FC<TrainerFormProps> = ({
     try {
       const processedValues = {
         ...values,
-        trainerSubjects: values.trainerSubjects.toString().split(",").map((s) => s.trim()), // Split by commas and trim
+        trainerSubjects: values.trainerSubjects
+          .toString()
+          .split(",")
+          .map((s) => s.trim()),
       };
-      if (values.id) {
-        // Update trainer
-        await axios.put(`/api/trainers/${values.id}`, processedValues);
+
+      if (initialValues._id) {
+        // Change from values.id to initialValues._id
+        await axios.put("/api/trainers", {
+          id: initialValues._id, // Change to match the API expectation
+          ...processedValues,
+        });
         toast.success("Trainer updated successfully!");
       } else {
-        // Create trainer
         await axios.post("/api/trainers", processedValues);
         toast.success("Trainer created successfully!");
       }
