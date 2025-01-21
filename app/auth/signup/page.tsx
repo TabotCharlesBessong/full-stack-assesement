@@ -6,6 +6,7 @@ import axios from "axios";
 import toast from "react-hot-toast";
 import { motion } from "framer-motion";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
 
 const SignupSchema = Yup.object().shape({
   username: Yup.string().required("Username is required"),
@@ -118,6 +119,12 @@ export default function Signup() {
               >
                 {isSubmitting ? "Signing up..." : "Signup"}
               </button>
+              <div className="mb-4 flex items-center justify-between">
+                <p className="text-xl">Do you already have an account</p>
+                <p>
+                  <Link href="/auth/login">login here</Link>
+                </p>
+              </div>
             </Form>
           )}
         </Formik>

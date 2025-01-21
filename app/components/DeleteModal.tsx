@@ -26,7 +26,7 @@ const DeleteModal = ({
             Cancel
           </button>
           <button
-            onClick={() => onDelete(trainer.id!)} // Non-null assertion because trainer is defined
+            onClick={() => onDelete(trainer._id!)} // Non-null assertion because trainer is defined
             className="px-4 py-2 bg-red-500 text-white rounded"
           >
             Delete

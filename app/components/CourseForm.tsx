@@ -25,14 +25,22 @@ export default function CourseForm({
 }) {
   const handleSubmit = async (values: any) => {
     try {
-      if(initialValues){
-        await axios.post("/api/courses", {courseId:initialValues.id, ...values});
-        toast.success("Trainer created successfully!");
-      }else{
+      if (initialValues) {
+        console.log("Updating course:", initialValues._id, values); // Debug log
+        const response = await axios.put("/api/courses", {
+          id: initialValues._id, // Changed from courseId to id to match API
+          ...values,
+        });
+        console.log("Update response:", response.data); // Debug log
+        toast.success("Course updated successfully!");
+      } else {
         await axios.post("/api/courses", values);
         toast.success("Course created successfully!");
       }
+      onClose();
+      fetchCourses();
     } catch (error) {
+      console.error("Submit error:", error); // Debug log
       toast.error("An error occurred. Please try again.");
     }
   };

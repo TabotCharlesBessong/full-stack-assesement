@@ -56,17 +56,18 @@ export async function POST(req: Request) {
   }
 }
 
+// PUT handler
 export async function PUT(req: Request) {
   await connectDB();
-  const { trainerId, trainerSubjects, ...updates } = await req.json();
+  const { id, trainerSubjects, ...updates } = await req.json();
 
   try {
     const processedSubjects = Array.isArray(trainerSubjects)
       ? trainerSubjects
-      : trainerSubjects.split(",").map((s: string) => s.trim());
+      : trainerSubjects.toString().split(",").map((s: string) => s.trim());
 
     const trainer = await Trainer.findByIdAndUpdate(
-      trainerId,
+      id,
       { ...updates, trainerSubjects: processedSubjects },
       { new: true }
     );
@@ -80,6 +81,7 @@ export async function PUT(req: Request) {
 
     return NextResponse.json(trainer);
   } catch (error) {
+    console.error('Update error:', error);
     return NextResponse.json(
       { message: "Failed to update trainer." },
       { status: 500 }
@@ -87,13 +89,20 @@ export async function PUT(req: Request) {
   }
 }
 
-
+// DELETE handler
 export async function DELETE(req: Request) {
   await connectDB();
-  const { trainerId } = await req.json();
+  const url = new URL(req.url);
+  const id = url.searchParams.get("id");
 
   try {
-    const trainer = await Trainer.findByIdAndDelete(trainerId);
+    if (!id) {
+      return NextResponse.json(
+        { message: "Trainer ID is required." },
+        { status: 400 }
+      );
+    }
+    const trainer = await Trainer.findByIdAndDelete(id);
     if (!trainer) {
       return NextResponse.json(
         { message: "Trainer not found." },
@@ -102,6 +111,7 @@ export async function DELETE(req: Request) {
     }
     return NextResponse.json({ message: "Trainer deleted successfully." });
   } catch (error) {
+    console.error('Delete error:', error);
     return NextResponse.json(
       { message: "Failed to delete trainer." },
       { status: 500 }

@@ -1,0 +1,31 @@
+version: "3.8"
+
+services:
+  app:
+    build: .
+    container_name: full-stack-assesement
+    ports:
+      - "3000:3000"  # Map port 3000 of the container to port 3000 on the host
+    environment:
+      - NODE_ENV=production  # Set environment variables for the app
+      - MONGO_URI=mongodb+srv://username:password@cluster0.lztyj1t.mongodb.net/seminar
+    depends_on:
+      - mongo  # Make sure the MongoDB container is running before this one starts
+    networks:
+      - app-network
+
+  mongo:
+    image: mongo:latest  # Use the official MongoDB image
+    container_name: your-mongo-container
+    ports:
+      - "27017:27017"  # Expose MongoDB's default port
+    volumes:
+      - mongo-data:/data/db  # Persist MongoDB data
+    networks:
+      - app-network
+
+volumes:
+  mongo-data:  # Define the volume for MongoDB data persistence
+
+networks:
+  app-network:  # Create a shared network for app and mongo containers
